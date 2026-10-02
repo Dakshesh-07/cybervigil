@@ -44,6 +44,7 @@ Built for both immediate victim assistance and long-term resilience, CyberVigil 
   - Client-side EXIF/GPS metadata stripping from attached photos before storage.
   - Real-time SHA-256 cryptographic evidence checksum calculation (court-admissible under Section 65B of the Indian Evidence Act).
   - 100% anonymous reporting option with instant 6-character Case Reference PIN tracking.
+  - **Section 65B Cyber Evidence Docket**: Generates court-admissible forensic legal dossiers complete with statutory IT Act / POCSO provisions, SHA-256 checksum verification, and printable export.
   - Automatically synchronizes with the Officer Portal in real-time.
 
 - **POCSO Child Welfare & Police Officer Portal (`/portal`)**:
@@ -103,6 +104,21 @@ To ensure random individuals cannot register or log in to restricted positions, 
 
 ---
 
+### 5. Pre-Seeded Test Credentials & 2FA Bypass
+
+For instantaneous testing and evaluation of all clearance roles, pre-configured accounts are provided in [`Login.tsx`](src/pages/Login.tsx):
+
+| Role / Persona | Email | Password | Identification & Clearance Details |
+| :--- | :--- | :--- | :--- |
+| **Student** | `student@cybervigil.org` | `student123` | Roll ID: `DPS-2026-X88` (Delhi Public School, R.K. Puram) |
+| **Youth Defender** | `defender@cybervigil.org` | `defender123` | Roll ID: `KV-2026-DEF` (Kendriya Vidyalaya) |
+| **Parent / Guardian** | `parent@cybervigil.org` | `parent123` | Linked Ward PIN: `CV-1042` |
+| **Police Inspector** | `officer@cybervigil.gov.in` | `officer123` | Badge: `#CPU-4`, Security Token: `POCSO-7749-SEC` |
+
+> **2FA OTP Codes**: When prompted for 2FA Email OTP, you can use the dynamically generated OTP displayed in the modal notification or standard test bypass codes `123456` / `482910`.
+
+---
+
 ## Technology Stack
 
 - **Frontend**: React 18 with TypeScript
@@ -139,22 +155,31 @@ To ensure random individuals cannot register or log in to restricted positions, 
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` and add your Google Gemini API key:
+   Edit `.env` and configure your API keys:
    ```env
+   # Required: Google Gemini AI Intelligence
    VITE_GEMINI_API_KEY=your_google_gemini_api_key_here
    VITE_GEMINI_MODEL=gemini-3.6-flash
+
+   # Optional: Supabase Production Backend (Falls back seamlessly to local persistence engine if omitted)
+   # VITE_SUPABASE_URL=https://your-project.supabase.co
+   # VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+   # Optional: Discord Security Webhook (Falls back to defender console logging if omitted)
+   # VITE_DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
    ```
 
 4. **Start Local Development Server:**
    ```bash
    npm run dev
    ```
+   *(On Windows PowerShell, if script execution is restricted, run `npm.cmd run dev`)*.  
    Open your browser at `http://localhost:5173`.
 
 5. **Typecheck & Build for Production:**
    ```bash
    # Run TypeScript compilation check
-   npx tsc --noEmit
+   npm run typecheck
 
    # Create production build in dist/
    npm run build
@@ -171,6 +196,8 @@ To ensure random individuals cannot register or log in to restricted positions, 
 CyberVigil/
 ├── public/
 │   ├── cybervigil-banner.png     # Brand banner asset
+│   ├── cybervigil-horizontal.png # Horizontal brand logo
+│   ├── cybervigil-logo.png       # Square brand icon
 │   ├── cybervigil-shield.png     # Brand shield asset
 │   ├── favicon.ico               # Browser favicon
 │   ├── shield.svg                # Vector shield logo
@@ -178,45 +205,50 @@ CyberVigil/
 ├── src/
 │   ├── components/
 │   │   ├── auth/
-│   │   │   ├── EmailOTPModal.tsx     # 2FA Email OTP modal with resend countdown
-│   │   │   └── ProtectedRoute.tsx    # Role-based route authorization guards
-│   │   └── layout/
-│   │       ├── CamouflageOverlay.tsx # 4-Persona Quick Escape emergency overlay
-│   │       ├── EmergencyBanner.tsx   # Top banner with Childline 1098 hotline
-│   │       ├── Footer.tsx            # Footer navigation and legal disclosures
-│   │       └── Navbar.tsx            # Dynamic navbar with role and page context
+│   │   │   ├── EmailOTPModal.tsx         # 2FA Email OTP modal with resend countdown
+│   │   │   └── ProtectedRoute.tsx        # Role-based route authorization guards
+│   │   ├── layout/
+│   │   │   ├── CamouflageOverlay.tsx     # 4-Persona Quick Escape emergency overlay
+│   │   │   ├── EmergencyBanner.tsx       # Top banner with Childline 1098 hotline
+│   │   │   ├── Footer.tsx                # Footer navigation and legal disclosures
+│   │   │   └── Navbar.tsx                # Dynamic navbar with role and page context
+│   │   └── CyberEvidenceDocket.tsx       # Section 65B court evidence dossier generator
 │   ├── context/
-│   │   └── AuthContext.tsx       # RBAC auth state, credentials & identity proof
+│   │   └── AuthContext.tsx           # RBAC auth state, credentials & identity proof
 │   ├── lib/
-│   │   ├── gemini.ts             # Google Gemini AI client integration
-│   │   └── supabase.ts           # Supabase client connector
+│   │   ├── discord.ts                # Discord webhook dispatch & community alerts
+│   │   ├── gemini.ts                 # Google Gemini AI client integration
+│   │   └── supabase.ts               # Supabase client connector & local persistence
 │   ├── pages/
-│   │   ├── AIAssistant.tsx       # Trauma-informed Guardian AI chat interface
-│   │   ├── BraveStories.tsx      # Community recovery stories & authoring
-│   │   ├── Home.tsx              # Interactive safety gateways & simulator
-│   │   ├── LandingPage.tsx       # Public showcase & feature introduction
-│   │   ├── Learn.tsx             # Digital resilience academy modules
-│   │   ├── Login.tsx             # Multi-tab login with identity credentials
-│   │   ├── OrgPortal.tsx         # POCSO officer investigation portal
-│   │   ├── Register.tsx          # Multi-category registration with identity proof
-│   │   ├── ReportIncident.tsx    # Forensic incident intake & EXIF scrubbing
-│   │   ├── SafeConnect.tsx       # Accredited counselor directory
-│   │   └── SecurityHub.tsx       # SHA-256 evidence hasher & session purge
+│   │   ├── AIAssistant.tsx           # Trauma-informed Guardian AI chat interface
+│   │   ├── BraveStories.tsx          # Community recovery stories & authoring
+│   │   ├── Home.tsx                  # Interactive safety gateways & simulator
+│   │   ├── LandingPage.tsx           # Public showcase & feature introduction
+│   │   ├── Learn.tsx                 # Digital resilience academy modules
+│   │   ├── Login.tsx                 # Multi-tab login with identity credentials
+│   │   ├── OrgPortal.tsx             # POCSO officer investigation portal
+│   │   ├── Register.tsx              # Multi-category registration with identity proof
+│   │   ├── ReportIncident.tsx        # Forensic incident intake & EXIF scrubbing
+│   │   ├── SafeConnect.tsx           # Accredited counselor directory
+│   │   └── SecurityHub.tsx           # SHA-256 evidence hasher & session purge
 │   ├── types/
-│   │   └── index.ts              # Global TypeScript interfaces & data models
+│   │   └── index.ts                  # Global TypeScript interfaces & data models
 │   ├── utils/
-│   │   └── localStore.ts         # Resilient browser session storage
-│   ├── App.tsx                   # Top-level routing & layout shell
-│   ├── index.css                 # Tailwind design tokens & dark mode classes
-│   └── main.tsx                  # Application entry point
-├── .env.example                  # Environment variable template
-├── .gitignore                    # Git ignore file for secrets and dependencies
-├── LICENSE                       # MIT License
-├── package.json                  # Dependencies and build scripts
-├── tailwind.config.js            # Custom color schemes & font config
-├── tsconfig.json                 # TypeScript compiler configuration
-├── vercel.json                   # Vercel SPA rewrite rules
-└── vite.config.ts                # Vite dev server and proxy configuration
+│   │   └── rbac.ts                   # RBAC clearance tiers, permissions & badge definitions
+│   ├── App.tsx                       # Top-level routing & layout shell
+│   ├── index.css                     # Tailwind design tokens & dark mode classes
+│   └── main.tsx                      # Application entry point
+├── .env.example                      # Environment variable template
+├── .gitignore                        # Git ignore file for secrets and dependencies
+├── DESIGN.md                         # Sentinelle Haven design system & color tokens
+├── LICENSE                           # MIT License
+├── package.json                      # Dependencies and build scripts
+├── postcss.config.js                 # PostCSS configuration
+├── supabase_rbac_schema.sql          # PostgreSQL RLS & POCSO compliance schema
+├── tailwind.config.js                # Custom color schemes & font config
+├── tsconfig.json                     # TypeScript compiler configuration
+├── vercel.json                       # Vercel SPA rewrite rules
+└── vite.config.ts                    # Vite dev server and proxy configuration
 ```
 
 ---
